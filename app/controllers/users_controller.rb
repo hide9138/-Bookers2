@@ -1,4 +1,6 @@
 class UsersController < ApplicationController
+  before_action :authenticate_user!
+
 
   def index
     @users = User.all
@@ -7,17 +9,18 @@ class UsersController < ApplicationController
   end
 
     def home
-    @users = User.all
     @book = Book.new
     @books = Book.all
-    @user = current_user
-    end
+    @users = current_user
+    @user = User.find(params[:id])
+  end
 
   def show
-    @user = User.find(params[:id])
-    @books = Book.all
     @book = Book.new
+    @books = Book.all
+    @user = User.find(params[:id])
   end
+
 
   def new
     @user = User.new
@@ -25,12 +28,20 @@ class UsersController < ApplicationController
 
   def edit
     @user = User.find(params[:id])
+    if @user.id == current_user.id
+    else
+    redirect_to user_path(current_user.id)
+    end
   end
 
   def update
     @user = User.find(params[:id])
-    @user.update(user_params)
-    redirect_to users_path
+    if @user.update(user_params)
+      flash[:notice] = "You have updated user successfully."
+      redirect_to user_path(@user)
+    else
+      render 'edit'
+    end
   end
 
   private
